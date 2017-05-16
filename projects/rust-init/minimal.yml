@@ -2,7 +2,7 @@ kernel:
   image: "linuxkit/kernel:4.9.x"
   cmdline: "console=ttyS0 page_poison=1"
 init:
-  - mato/rust-init:1f550916c70638bfa28b502eb7778b9abb71256f
+  - mato/rust-init:685ad5bea124829582d2547c42ec17ba0d7e282e
   - linuxkit/runc:2649198589ef0020d99f613adaeda45ce0093a38
   - linuxkit/containerd:cf2614f5a96c569a0bd4bd54e054a65ba17d167f
 onboot:
