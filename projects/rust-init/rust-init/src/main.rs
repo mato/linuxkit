@@ -38,8 +38,6 @@ fn main() {
           NONE)
         .unwrap_or_else(|e| panic!("mount /mnt failed: {}", e));
 
-    fs::create_dir("/mnt")
-        .unwrap_or_else(|e| panic!("mkdir /mnt failed: {}", e));
     lib::copy_tree(&Path::new("/"), &Path::new("/mnt"))
         .unwrap_or_else(|e| panic!("copy to /mnt failed: {}", e));
 
