@@ -6,3 +6,4 @@ authors = ["Martin Lucina <martin.lucina@docker.com>"]
 [dependencies]
 nix = "0.8.0"
 walkdir = "1"
+same-file = "0.1"
