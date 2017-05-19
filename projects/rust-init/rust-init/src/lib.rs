@@ -1,6 +1,7 @@
 use std::path::Path;
 use std::path::PathBuf;
 use std::fs;
+use std::os::unix::fs::symlink;
 
 extern crate walkdir;
 use self::walkdir::WalkDir;
@@ -46,12 +47,25 @@ pub fn copy_tree(src: &Path, dest: &Path) -> Result<u64, String> {
             }
         }
         else {
-            match fs::copy(&dent, &target) {
-                Err(err) => {
-                    let e = format!("{:?}: {}", dent, err);
-                    return Err(e);
+            let attr = fs::symlink_metadata(dent).unwrap();
+            if attr.file_type().is_symlink() {
+                let link = fs::read_link(dent).unwrap();
+                match symlink(&link, &target) {
+                    Err(err) => {
+                        let e = format!("{:?}: {}", target, err);
+                        return Err(e);
+                    }
+                    Ok(_) => continue,
                 }
-                Ok(bytes) => total_bytes += bytes,
+            }
+            else {
+                match fs::copy(&dent, &target) {
+                    Err(err) => {
+                        let e = format!("{:?}: {}", dent, err);
+                        return Err(e);
+                    }
+                    Ok(bytes) => total_bytes += bytes,
+                }
             }
         }
     }
