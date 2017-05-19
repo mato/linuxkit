@@ -4,10 +4,11 @@ RUN apt-get update && \
         --no-install-recommends \
         build-essential \
         ca-certificates \
+        curl \
         patchelf \
     && apt-get clean
-ADD https://static.rust-lang.org/rustup/dist/x86_64-unknown-linux-gnu/rustup-init /tmp/
-RUN chmod +x /tmp/rustup-init && /tmp/rustup-init -y
+RUN curl -Ssf https://static.rust-lang.org/rustup/dist/x86_64-unknown-linux-gnu/rustup-init -o /tmp/rustup-init \
+    && chmod +x /tmp/rustup-init && /tmp/rustup-init -y
 COPY . /build
 WORKDIR /build
 RUN PATH=$PATH:/root/.cargo/bin rustup target install x86_64-unknown-linux-musl
