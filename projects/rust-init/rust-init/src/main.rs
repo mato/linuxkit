@@ -27,8 +27,6 @@ fn append(s: &str, path: &Path) -> io::Result<()> {
 }
 
 fn main() {
-    println!("Hello, World!");
-
     const NONE: Option<&'static [u8]> = None;
     mount(Some(b"tmpfs".as_ref()),
           "/mnt",
@@ -70,8 +68,7 @@ fn main() {
     execv(&CString::new("/bin/busybox").unwrap(),
         &[CString::new("switch_root").unwrap(),
           CString::new("/mnt").unwrap(),
-          CString::new("/bin/sh").unwrap()]).unwrap();
-    
-    loop {
-    }
+          CString::new("/sbin/init").unwrap()]).unwrap();
+   
+    panic!();
 }
