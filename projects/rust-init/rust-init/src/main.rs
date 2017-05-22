@@ -53,12 +53,12 @@ fn main() {
                 let tty = &opt[8..];
                 let inittab = Path::new("/mnt/etc/inittab");
                 append(
-                    format!("{}::once:cat /etc/issue", tty)
+                    format!("{}::once:cat /etc/issue\n", tty)
                     .as_str(),
                     &inittab)
                     .unwrap();
                 append(
-                    format!("{}::respawn:/sbin/getty -n -l /bin/sh -L 115200 {} vt100",
+                    format!("{}::respawn:/sbin/getty -n -l /bin/sh -L 115200 {} vt100\n",
                         tty, tty)
                     .as_str(),
                     &inittab)
