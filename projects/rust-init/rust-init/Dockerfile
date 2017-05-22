@@ -20,3 +20,4 @@ ENTRYPOINT []
 CMD []
 WORKDIR /
 COPY --from=0 /build/target/x86_64-unknown-linux-musl/debug/init /init
+COPY etc etc/
