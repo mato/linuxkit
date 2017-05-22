@@ -9,9 +9,9 @@ RUN apt-get update && \
     && apt-get clean
 RUN curl -Ssf https://static.rust-lang.org/rustup/dist/x86_64-unknown-linux-gnu/rustup-init -o /tmp/rustup-init \
     && chmod +x /tmp/rustup-init && /tmp/rustup-init -y
+RUN PATH=$PATH:/root/.cargo/bin rustup target install x86_64-unknown-linux-musl
 COPY . /build
 WORKDIR /build
-RUN PATH=$PATH:/root/.cargo/bin rustup target install x86_64-unknown-linux-musl
 RUN PATH=$PATH:/root/.cargo/bin cargo build --target=x86_64-unknown-linux-musl
 RUN patchelf --set-interpreter /lib/ld-musl-x86_64.so.1 target/x86_64-unknown-linux-musl/debug/init
 
