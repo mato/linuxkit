@@ -51,12 +51,12 @@ fn main() {
         if opt.starts_with("console=") {
             let console = &opt[9..];
             append(format!("{}::once:cat /etc/issue", console).as_str(), 
-                &Path::new("/etc/inittab"))
+                &Path::new("/mnt/etc/inittab"))
                 .unwrap();
             append(format!(
                 "{}::respawn:/sbin/getty -n -l /bin/sh -L 115200 {} vt100",
                 console, console).as_str(), 
-                &Path::new("/etc/inittab"))
+                &Path::new("/mnt/etc/inittab"))
                 .unwrap();
         }
     }
