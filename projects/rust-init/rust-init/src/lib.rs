@@ -2,6 +2,8 @@ use std::path::Path;
 use std::path::PathBuf;
 use std::fs;
 use std::os::unix::fs::symlink;
+use std::os::unix::fs::FileTypeExt;
+use std::os::unix::fs::MetadataExt;
 
 extern crate walkdir;
 use self::walkdir::WalkDir;
@@ -9,6 +11,11 @@ use self::walkdir::WalkDirIterator;
 
 extern crate same_file;
 use self::same_file::Handle;
+
+extern crate nix;
+use nix::sys::stat::mknod;
+use nix::sys::stat::Mode;
+use nix::sys::stat::SFlag;
 
 pub fn copy_tree(src: &Path, dest: &Path) -> Result<u64, String> {
     if !src.is_dir() {
@@ -51,6 +58,21 @@ pub fn copy_tree(src: &Path, dest: &Path) -> Result<u64, String> {
             if attr.file_type().is_symlink() {
                 let link = fs::read_link(dent).unwrap();
                 match symlink(&link, &target) {
+                    Err(err) => {
+                        let e = format!("{:?}: {}", target, err);
+                        return Err(e);
+                    }
+                    Ok(_) => continue,
+                }
+            }
+            else if attr.file_type().is_block_device()
+                || attr.file_type().is_char_device()
+                || attr.file_type().is_fifo()
+                || attr.file_type().is_socket() {
+                let kind = SFlag::from_bits_truncate(attr.mode());
+                let perm = Mode::from_bits_truncate(attr.mode());
+                let dev = attr.rdev();
+                match mknod(&target, kind, perm, dev) {
                     Err(err) => {
                         let e = format!("{:?}: {}", target, err);
                         return Err(e);
