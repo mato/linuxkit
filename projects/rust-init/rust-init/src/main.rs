@@ -64,7 +64,7 @@ fn main() {
     execv(&CString::new("/bin/busybox").unwrap(),
         &[CString::new("switch_root").unwrap(),
           CString::new("/mnt").unwrap(),
-          CString::new("/sbin/init").unwrap()]).unwrap();
+          CString::new("/bin/sh").unwrap()]).unwrap();
     
     loop {
     }
