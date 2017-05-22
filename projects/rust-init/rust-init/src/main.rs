@@ -30,7 +30,7 @@ fn main() {
     println!("Hello, World!");
 
     const NONE: Option<&'static [u8]> = None;
-    mount(NONE,
+    mount(Some(b"rootfs".as_ref()),
           "/mnt",
           Some(b"tmpfs".as_ref()),
           MsFlags::empty(),
@@ -40,7 +40,7 @@ fn main() {
     lib::copy_tree(&Path::new("/"), &Path::new("/mnt"))
         .unwrap_or_else(|e| panic!("copy to /mnt failed: {}", e));
 
-    mount(NONE,
+    mount(Some(b"proc".as_ref()),
           "/proc",
           Some(b"proc".as_ref()),
           MS_NOEXEC | MS_NOSUID | MS_NODEV,
