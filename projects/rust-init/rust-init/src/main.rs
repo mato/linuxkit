@@ -1,15 +1,14 @@
-extern crate nix;
-use nix::mount::{mount, MsFlags, MS_NOEXEC, MS_NOSUID, MS_NODEV};
-use nix::unistd::execv;
-
-mod lib;
-
 use std::fs::{File, OpenOptions};
 use std::io;
 use std::io::prelude::*;
 use std::path::Path;
 
+extern crate nix;
+use nix::mount::{mount, MsFlags, MS_NOEXEC, MS_NOSUID, MS_NODEV};
+use nix::unistd::execv;
 use std::ffi::CString;
+
+mod lib;
 
 fn cat(path: &Path) -> io::Result<String> {
     let mut f = try!(File::open(path));
@@ -20,46 +19,37 @@ fn cat(path: &Path) -> io::Result<String> {
     }
 }
 
-fn append(s: &str, path: &Path) -> io::Result<()> {
-    let mut f = try!(OpenOptions::new().append(true).open(path));
-
-    f.write_all(s.as_bytes())
-}
-
 fn main() {
     const NONE: Option<&'static [u8]> = None;
+
     mount(Some(b"tmpfs".as_ref()),
-          "/mnt",
-          Some(b"tmpfs".as_ref()),
-          MsFlags::empty(),
-          NONE)
+        "/mnt",
+        Some(b"tmpfs".as_ref()),
+        MsFlags::empty(),
+        NONE)
         .unwrap_or_else(|e| panic!("mount /mnt failed: {}", e));
 
     lib::copy_tree(&Path::new("/"), &Path::new("/mnt"))
         .unwrap_or_else(|e| panic!("copy to /mnt failed: {}", e));
 
     mount(Some(b"proc".as_ref()),
-          "/proc",
-          Some(b"proc".as_ref()),
-          MS_NOEXEC | MS_NOSUID | MS_NODEV,
-          NONE)
+        "/proc",
+        Some(b"proc".as_ref()),
+        MS_NOEXEC | MS_NOSUID | MS_NODEV,
+        NONE)
         .unwrap_or_else(|e| panic!("mount /proc failed: {}", e));
 
     for line in cat(&Path::new("/proc/cmdline")).unwrap().lines() {
         for opt in line.split_whitespace() {
             if opt.starts_with("console=") {
                 let tty = &opt[8..];
-                let inittab = Path::new("/mnt/etc/inittab");
-                append(
-                    format!("{}::once:cat /etc/issue\n", tty)
-                    .as_str(),
-                    &inittab)
-                    .unwrap();
-                append(
-                    format!("{}::respawn:/sbin/getty -n -l /bin/sh -L 115200 {} vt100\n",
-                        tty, tty)
-                    .as_str(),
-                    &inittab)
+                let inittab = OpenOptions::new().append(true)
+                    .open("/mnt/etc/inittab")
+                    .unwrap_or_else(|e| panic!("open /mnt/etc/inittab failed: {}", e));
+                writeln!(&inittab, "{}::once:cat /etc/issue", tty).unwrap();
+                writeln!(&inittab,
+                    "{}::respawn:/sbin/getty -n -l /bin/sh -L 115200 {} vt100",
+                    tty, tty)
                     .unwrap();
             }
         }
@@ -69,6 +59,6 @@ fn main() {
         &[CString::new("switch_root").unwrap(),
           CString::new("/mnt").unwrap(),
           CString::new("/sbin/init").unwrap()]).unwrap();
-   
+
     panic!();
 }
