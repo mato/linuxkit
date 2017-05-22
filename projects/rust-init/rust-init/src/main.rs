@@ -47,17 +47,23 @@ fn main() {
           NONE)
         .unwrap_or_else(|e| panic!("mount /proc failed: {}", e));
 
-    for opt in cat(&Path::new("/proc/cmdline")).unwrap().lines() {
-        if opt.starts_with("console=") {
-            let console = &opt[9..];
-            append(format!("{}::once:cat /etc/issue", console).as_str(), 
-                &Path::new("/mnt/etc/inittab"))
-                .unwrap();
-            append(format!(
-                "{}::respawn:/sbin/getty -n -l /bin/sh -L 115200 {} vt100",
-                console, console).as_str(), 
-                &Path::new("/mnt/etc/inittab"))
-                .unwrap();
+    for line in cat(&Path::new("/proc/cmdline")).unwrap().lines() {
+        for opt in line.split_whitespace() {
+            if opt.starts_with("console=") {
+                let tty = &opt[8..];
+                let inittab = Path::new("/mnt/etc/inittab");
+                append(
+                    format!("{}::once:cat /etc/issue", tty)
+                    .as_str(),
+                    &inittab)
+                    .unwrap();
+                append(
+                    format!("{}::respawn:/sbin/getty -n -l /bin/sh -L 115200 {} vt100",
+                        tty, tty)
+                    .as_str(),
+                    &inittab)
+                    .unwrap();
+            }
         }
     }
 
