@@ -30,7 +30,7 @@ fn main() {
     println!("Hello, World!");
 
     const NONE: Option<&'static [u8]> = None;
-    mount(Some(b"rootfs".as_ref()),
+    mount(Some(b"tmpfs".as_ref()),
           "/mnt",
           Some(b"tmpfs".as_ref()),
           MsFlags::empty(),
